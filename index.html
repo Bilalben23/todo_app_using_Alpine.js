@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-do list</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<style>
+    .container {
+        cursor: pointer;
+    }
+
+    .container input {
+        display: none;
+    }
+
+    .container svg {
+        overflow: visible;
+    }
+
+    .path {
+        fill: none;
+        stroke: white;
+        stroke-width: 6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease;
+        stroke-dasharray: 241 9999999;
+        stroke-dashoffset: 0;
+    }
+
+    .container input:checked~svg .path {
+        stroke-dasharray: 70.5096664428711 9999999;
+        stroke-dashoffset: -262.2723388671875;
+    }
+</style>
+
+<body class="bg-gray-400">
+
+
+    <div x-data="{
+        tasks: [],
+        task: null,
+        addTask() {
+            if(this.task.length > 2) {
+                this.tasks.push({
+                    id: this.tasks.length+1,
+                    task: this.task,
+                    isCompleted: false
+                })
+                this.task=null
+            }
+            return;
+        },
+        removeTask(id) {
+            const filteredTask = this.tasks.filter(task => {
+                return task.id !== +id;
+            });
+            this.tasks = filteredTask;
+        },
+        completed(id) {
+            const completedTask = this.tasks.map(task => {
+            return task.id === +id ? {...task, isCompleted: !task.isCompleted}: task;
+            })
+            this.tasks = completedTask;
+        }
+    }" class="p-3">
+        <div class="flex items-center justify-center">
+            <div>
+                <input x-model="task" type="text" placeholder="Enter your task..." class="px-2 py-1"
+                    @keydown.enter="addTask()">
+            </div>
+            <div class="ml-3">
+                <button @click="addTask()"
+                    class="px-4 py-1 bg-blue-500 text-white shadow rounded-md hover:bg-blue-600 transition-all">Add</button>
+            </div>
+        </div>
+        <div class="text-black mt-5 max-w-screen-md mx-auto">
+            <template x-if="tasks.length!==0">
+                <template x-for="task in tasks">
+                    <div :key="task.id" class="flex items-center justify-between mb-2" x-data="{ 
+                    editable: false,
+                    editedTask: task.task,
+                    editTask(id) {
+                        const editedTasks = this.tasks.map(task => {
+                            return task.id === +id ? {...task, task: this.editedTask}: task;
+                        }) 
+                        tasks = editedTasks;
+                    }}" ">
+                    <div class=" flex items-center justify-center">
+                        <template x-if="!editable">
+                            <label class="container mr-3">
+                                <input type="checkbox" :checked="task.isCompleted" @click="completed(task.id)">
+                                <svg viewBox=" 0 0 64 64" height="1.2em" width="1.2em">
+                                    <path
+                                        d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16"
+                                        pathLength="575.0541381835938" class="path"></path>
+                                </svg>
+                            </label>
+                        </template>
+                        <input x-ref="taskInput" type="text" :value="task.task" class="font-bold px-2 py-1"
+                            :readonly="!editable" :class="{
+                                'bg-transparent': !editable,
+                                'border-none': !editable,
+                                'outline-none': !editable,
+                                'line-through': task.isCompleted
+                            }" x-model="editedTask"></input>
+                    </div>
+                    <div class="w-[100px] flex justify-between items-stretch">
+                        <template x-if="!task.isCompleted && !editable">
+                            <button @click="editable = !editable, $refs.taskInput.focus()">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor"
+                                    class="w-7 h-7 text-green-900 hover:text-green-800">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                </svg>
+                            </button>
+                        </template>
+                        <template x-if="editable">
+                            <button @click="editTask(task.id); editable = false">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor"
+                                    class="w-7 h-7 text-green-900 hover:text-green-800">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                                </svg>
+                            </button>
+                        </template>
+                        <button @click="removeTask(task.id)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-7 h-7 text-red-500 hover:text-red-600">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                            </svg>
+                        </button>
+
+                    </div>
+        </div>
+        </template>
+        </template>
+        <template x-if="tasks.length === 0">
+            <p class="text-center">No Tasks To Show.</p>
+        </template>
+    </div>
+    </div>
+
+</body>
+
+</html>
