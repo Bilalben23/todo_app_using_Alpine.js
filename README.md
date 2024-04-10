@@ -10,5 +10,5 @@ AlpineJS is a lightweigth framework, it it has declarative syntax which makes it
   -  click event `@click` to handle user clicks.
   -  and more...
 ---  
-
+- *final project view*:
 ![todo-app Screenshot](https://github.com/Bilalben23/todo_app_using_Alpine.js/assets/129977156/cd062575-25eb-4bc8-970c-7c3c5f52d9eb)
